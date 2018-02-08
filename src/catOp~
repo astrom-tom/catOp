@@ -80,7 +80,7 @@ class Filecat(object):
             messages.Info('Apply Thresholds. Before thresholding, length = %s...'%len(column), 'Yes')
             self.column = column[(column>=float(thresh[0])) & (column <= float(thresh[1]))] 
             messages.Info('...After thresholding, length = %s...'%len(self.column), 'No')
-            messages.Info('min = %s, max = %s' %(min(self.column), max(self.column)), 'No')
+            messages.Info('min = %1.4f, max = %1.4f' %(min(self.column), max(self.column)), 'No')
             messages.Info('...Done', 'No')
             
         else:
@@ -140,8 +140,8 @@ def main():
 
     ###welcome message
     print('\n\033[1m' + '#########################################' + '\033[0m')
-    print('\033[1m'   + '##  catOp: XShooter Reoslution history ##' + '\033[0m')
-    print('\033[1m'   + '##    and compute quick statistics     ##' + '\033[0m')
+    print('\033[1m'   + '##  catOp: Quick Catalog Manipulation  ##' + '\033[0m')
+    print('\033[1m'   + '##        and basic statistics         ##' + '\033[0m')
     print('\033[1m'   + '##        Astrom-tom @ GitHub          ##' + '\033[0m')
     print('\033[1m'   + '##           2018 @ Paranal            ##' + '\033[0m')
     print('\033[1m'   + '#########################################' + '\033[0m\n')
