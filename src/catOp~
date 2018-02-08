@@ -1,0 +1,241 @@
+#!/usr/bin/python
+'''
+########################################################
+#####                                                  #
+#####                   -catOp                         #
+#####                  R.THOMAS                        #
+#####                    2018                          #
+#####                    Main                          #
+#####                                                  #
+#####--------------------------------------------------#
+#####                                                  #
+########################################################
+@License: GPL - see LICENCE.txt
+'''
+
+####Public General Libraries
+import sys
+import numpy
+import matplotlib.pyplot as plt
+
+####local imports
+import cli
+import extract
+import messages
+
+
+class Filecat(object):
+    def __init__(self, cat):
+        self.cat = cat
+        ###we extract the header
+        self.headers = extract.header(cat)
+
+    def extract_column(self, col, thresh):
+        '''
+        Method that extract the column to be matched
+        Parameters:
+        -----------
+        col     str, name of the column to be matched
+        thresh          list os str, with the thresholds to apply
+
+        New_attributes:
+        ---------------
+        self.column     list, of string, to be matched
+        '''
+        ###and the column to be match
+        column = extract.column(col, self.headers, self.cat)
+        ##apply trheshold
+        self.apply_threshold(column, thresh)
+
+    def apply_threshold(self, column, thresh):
+        '''
+        This method applies the threshold, if any
+
+        Parameters:
+        -----------
+        Column      numpy array 1D, of the column to analyse
+        thresh      list of strm with the threshold to apply
+
+        
+        New Attributes:
+        ---------------
+        self. column    numpy 1d Array, with the final column
+        '''
+
+        if thresh == None:
+            messages.Info('No Thresholds applied', 'Yes')
+            self.column = column
+            messages.Info('min = %s, max = %s' %(min(self.column), max(self.column)), 'No')
+
+        elif len(thresh) != 2:
+            messages.Error('You have to give two tresholds, min and max --> min <= x \
+                    <=max...exit...', 'Yes')
+            sys.exit()
+
+        elif len(thresh) == 2 and float(thresh[0])>float(thresh[1]):
+            messages.Error('vmin < vmax, catOp --help will help you....exit...', 'Yes')
+            sys.exit()
+            
+        elif len(thresh) == 2 and float(thresh[0])<float(thresh[1]):
+            messages.Info('Apply Thresholds. Before thresholding, length = %s...'%len(column), 'Yes')
+            self.column = column[(column>=float(thresh[0])) & (column <= float(thresh[1]))] 
+            messages.Info('...After thresholding, length = %s...'%len(self.column), 'No')
+            messages.Info('min = %s, max = %s' %(min(self.column), max(self.column)), 'No')
+            messages.Info('...Done', 'No')
+            
+        else:
+            messages.Warning('Could not perform thresholding, will use all data ....exit...', 'Yes')
+            self.column = column
+            messages.Info('min = %s, max = %s' %(min(self.column), max(self.column)), 'No')
+
+
+
+    def make_operation(self, operation, columns, thresh):
+        '''
+        Method that makes an operation between two columns
+
+        Parameters:
+        ----------
+        operation       str, either m, s, a or d
+        columns         list of str, with the two columns names
+        thresh          list os str, with the thresholds to apply
+
+        New Attributes:
+        ---------------
+        self.column     1D numpy array, containing the resulting column
+                                        from the operation between the two
+                                        column from the catalog
+        '''
+        messages.Info('Extract columns...', 'Yes')
+        col1 = extract.column(columns[0], self.headers, self.cat)
+        col2 = extract.column(columns[1], self.headers, self.cat)
+        messages.Info('....Done', 'No')
+
+        if operation == 'a':
+            messages.Info('Make addition...', 'Yes')
+            column = col1.astype('float') + col2.astype('float')
+ 
+        if operation == 'm':
+            messages.Info('Make multiplication...', 'Yes')
+            column = col1.astype('float') * col2.astype('float')
+
+        if operation == 's':
+            messages.Info('Make subtraction...', 'Yes')
+            column = col1.astype('float') - col2.astype('float')
+        
+        if operation == 'd':
+            messages.Info('Make division...', 'Yes')
+            column = col1.astype('float') / col2.astype('float')
+        
+        
+        messages.Info('....Done', 'No')
+        self.apply_threshold(column, thresh)
+        
+
+
+def main():
+    '''
+    This function is the main of the catmatch.
+    '''
+
+    ###welcome message
+    print('\n\033[1m' + '#########################################' + '\033[0m')
+    print('\033[1m'   + '##  catOp: XShooter Reoslution history ##' + '\033[0m')
+    print('\033[1m'   + '##    and compute quick statistics     ##' + '\033[0m')
+    print('\033[1m'   + '##        Astrom-tom @ GitHub          ##' + '\033[0m')
+    print('\033[1m'   + '##           2018 @ Paranal            ##' + '\033[0m')
+    print('\033[1m'   + '#########################################' + '\033[0m\n')
+    ####
+
+
+
+    ###1- we retrive the arguments
+    args = cli.CLI().arguments
+
+    ###2- open the catalog
+    cat = Filecat(args.catalog)
+    
+    ###3-columns
+    if args.n == 'single' and len(args.col) != 1:
+        messages.Error(('You asked for a single column analysis but the number\n\
+           of column you gave is different from one'), 'Yes')
+
+    elif args.n == 'single' and len(args.col) == 1:
+        if args.col[0] not in cat.headers:
+            messages.Error('Column %s not found in catalog ...exit...'%args.col[0], 'Yes')
+            sys.exit()
+        else:
+            messages.Info('Column %s found in catalog'%args.col[0], 'Yes')
+            cat.extract_column(args.col[0])
+            messages.Info('Column %s extracted from catalog with success'%args.col[0], 'No')
+
+    elif args.n == 'double' and len(args.col) == 1:
+        messages.Error(('You asked for a double column analysis but the number\n\
+           of column you gave is different from two'), 'Yes')
+
+    elif args.n == 'double' and len(args.col) == 2:
+        for col in args.col:
+            if col not in cat.headers:
+                messages.Error('Column not %s found in catalog  ...exit...'%col, 'No')
+                sys.exit()
+            else:
+                messages.Info('Column %s found in catalog'%col, 'No')
+                
+
+        ####if we get there, it means both columns are in the catalog, we must prepare
+        #####the final column
+        #####first we check if one operation was given
+        if args.operation == None:
+            messages.Error('You did not enter an operation to perform [-o argument]  ...exit...', 'No')
+            sys.exit()
+        else:
+            ###if one was given we compute the final column
+            cat.make_operation(args.operation, args.col, args.threshold)
+   
+
+        
+    if args.measurement == 'mean':
+        messages.Info('Make measurement of the mean...', 'Yes')
+        mean = numpy.nanmean(cat.column)
+        messages.Info('...Mean = %1.4f'%mean, 'No')
+
+    if args.measurement == 'median':
+        messages.Info('Make measurement of the median...', 'Yes')
+        median = numpy.nanmedian(cat.column)
+        messages.Info('...Median = %1.4f'%median, 'No')
+
+    if args.error == '1s':
+        messages.Info('Make measurement of the 1 sigma...', 'Yes')
+        std = numpy.nanstd(cat.column)
+        messages.Info('...1 sigma = %1.4f...'%std, 'No')
+
+
+    if args.error == 'MAD':
+        messages.Info('Make measurement of the MAD...', 'Yes')
+        MAD = numpy.nanmedian(numpy.abs(cat.column - numpy.nanmedian(cat.column)))
+        messages.Info('...MAD = %1.4f...'%MAD, 'No')
+
+
+    if args.error == 'Merr':
+        messages.Info('Make measurement of the error on the mean...', 'Yes')
+        Merr = numpy.nanmean(cat.column)/len(cat.column)
+        messages.Info('...Error on the mean = %1.4f'%Merr, 'No')
+
+
+    if args.plot == True:
+        fig = plt.figure()
+        aa = fig.add_subplot(111)
+        x1 = float(args.threshold[0])
+        x2 = float(args.threshold[1])
+        aa.hist(cat.column, bins = numpy.linspace(x1, x2, 500))
+        aa.set_ylabel('N')
+        aa.set_xlabel('x')
+        plt.show()
+
+    print('\n\n')
+
+main()
+
+
+
+
