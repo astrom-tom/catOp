@@ -139,12 +139,12 @@ def main():
     '''
 
     ###welcome message
-    print('\n\033[1m' + '#########################################' + '\033[0m')
-    print('\033[1m'   + '##  catOp: Quick Catalog Manipulation  ##' + '\033[0m')
-    print('\033[1m'   + '##        and basic statistics         ##' + '\033[0m')
-    print('\033[1m'   + '##        Astrom-tom @ GitHub          ##' + '\033[0m')
-    print('\033[1m'   + '##           2018 @ Paranal            ##' + '\033[0m')
-    print('\033[1m'   + '#########################################' + '\033[0m\n')
+    print('\n\t\t\033[1m' + '#########################################' + '\033[0m')
+    print('\t\t\033[1m'   + '##  catOp: Quick Catalog Manipulation  ##' + '\033[0m')
+    print('\t\t\033[1m'   + '##        and basic statistics         ##' + '\033[0m')
+    print('\t\t\033[1m'   + '##        Astrom-tom @ GitHub          ##' + '\033[0m')
+    print('\t\t\033[1m'   + '##           2018 @ Paranal            ##' + '\033[0m')
+    print('\t\t\033[1m'   + '#########################################' + '\033[0m\n')
     ####
 
 
